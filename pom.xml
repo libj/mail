@@ -26,7 +26,10 @@
   </parent>
   <artifactId>mail</artifactId>
   <version>0.4.1-SNAPSHOT</version>
-  <name>${project.groupId}:${project.artifactId}</name>
+  <name>OpenJAX Extensions Mail</name>
+  <description>
+    A supplementary extension to the java.mail package.
+  </description>
   <dependencies>
     <dependency>
       <groupId>javax.mail</groupId>
