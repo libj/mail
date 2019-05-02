@@ -1,9 +1,9 @@
-# OpenJAX Extensions Mail
+# OpenJAX Mail
 
 > Java API Extensions to `javax.mail`
 
-[![Build Status](https://travis-ci.org/openjax/ext-mail.png)](https://travis-ci.org/openjax/ext-mail)
-[![Coverage Status](https://coveralls.io/repos/github/openjax/ext-mail/badge.svg?branch=master)](https://coveralls.io/github/openjax/ext-mail?branch=master)
+[![Build Status](https://travis-ci.org/openjax/mail.png)](https://travis-ci.org/openjax/mail)
+[![Coverage Status](https://coveralls.io/repos/github/openjax/mail/badge.svg?branch=master)](https://coveralls.io/github/openjax/mail?branch=master)
 
 ### JavaDocs
 

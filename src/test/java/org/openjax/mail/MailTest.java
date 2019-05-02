@@ -14,7 +14,7 @@
  * program. If not, see <http://opensource.org/licenses/MIT/>.
  */
 
-package org.openjax.ext.mail;
+package org.openjax.mail;
 
 import static org.junit.Assert.*;
 
