@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 OpenJAX
+/* Copyright (c) 2010 LibJ
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +14,7 @@
  * program. If not, see <http://opensource.org/licenses/MIT/>.
  */
 
-package org.openjax.mail;
+package org.libj.mail;
 
 import static org.junit.Assert.*;
 
