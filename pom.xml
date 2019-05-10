@@ -28,7 +28,7 @@
   <version>0.4.1-SNAPSHOT</version>
   <name>LibJ Mail</name>
   <description>
-    A supplementary extension to the java.mail package.
+    Supplementary extensions to the java.mail package.
   </description>
   <dependencies>
     <dependency>
