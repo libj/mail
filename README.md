@@ -1,11 +1,13 @@
 # LibJ Mail
 
-> Java API Extensions to `javax.mail`
-
 [![Build Status](https://travis-ci.org/libj/mail.png)](https://travis-ci.org/libj/mail)
 [![Coverage Status](https://coveralls.io/repos/github/libj/mail/badge.svg?branch=master)](https://coveralls.io/github/libj/mail?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/org.libj/mail.svg)](https://www.javadoc.io/doc/org.libj/mail)
 [![Released Version](https://img.shields.io/maven-central/v/org.libj/mail.svg)](https://mvnrepository.com/artifact/org.libj/mail)
+
+## Introduction
+
+LibJ Mail is a Java API Extensions to `javax.mail`.
 
 ## Contributing
 
