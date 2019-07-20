@@ -37,8 +37,11 @@ import org.slf4j.LoggerFactory;
  * implementation supports a wide configuration requirement set as could be
  * expected by SMPT(S) servers.
  */
-public class Mail {
+public final class Mail {
   private static final Logger logger = LoggerFactory.getLogger(Mail.class);
+
+  private Mail() {
+  }
 
   /**
    * Enum representing the mail transfer protocol.
@@ -56,7 +59,7 @@ public class Mail {
         return null;
 
       final InternetAddress[] addresses = new InternetAddress[emailAddrs.length];
-      for (int i = 0; i < emailAddrs.length; i++)
+      for (int i = 0; i < emailAddrs.length; ++i)
         addresses[i] = new InternetAddress(emailAddrs[i]);
 
       return addresses;
