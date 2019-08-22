@@ -57,7 +57,12 @@ public class MimeContent implements Cloneable, Serializable {
 
   @Override
   public MimeContent clone() {
-    return new MimeContent(content, type);
+    try {
+      return (MimeContent)super.clone();
+    }
+    catch (final CloneNotSupportedException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   @Override
