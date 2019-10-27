@@ -61,7 +61,7 @@ public class MimeContent implements Cloneable, Serializable {
       return (MimeContent)super.clone();
     }
     catch (final CloneNotSupportedException e) {
-      throw new IllegalStateException(e);
+      throw new RuntimeException(e);
     }
   }
 
