@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@code Mail} class is used to send email via a SMTP(S) server. This
+ * The {@link Mail} class is used to send email via a SMTP(S) server. This
  * implementation supports a wide configuration requirement set as could be
  * expected by SMPT(S) servers.
  */
@@ -73,7 +73,7 @@ public final class Mail {
     public final InternetAddress[] bcc;
 
     /**
-     * Create a new {@code Message} with the supplied parameters.
+     * Create a new {@link Message} with the supplied parameters.
      *
      * @param subject The subject of the message.
      * @param content The {@link MimeContent} content.
@@ -91,7 +91,7 @@ public final class Mail {
     }
 
     /**
-     * Create a new {@code Message} with the supplied parameters.
+     * Create a new {@link Message} with the supplied parameters.
      *
      * @param subject The subject of the message.
      * @param content The {@link MimeContent} content.
@@ -136,7 +136,7 @@ public final class Mail {
     /**
      * Default no-op implementation of failure callback.
      *
-     * @param e The {@code MessagingException} that led to the failure.
+     * @param e The {@link MessagingException} that led to the failure.
      */
     public void failure(final MessagingException e) {
     }
@@ -184,7 +184,7 @@ public final class Mail {
     private final Properties defaultProperties;
 
     /**
-     * Creates a new {@code Sender} with the specified parameters.
+     * Creates a new {@link Sender} with the specified parameters.
      *
      * @param protocol The mail transport {@link Protocol}.
      * @param host The transport server host.

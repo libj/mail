@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * The {@code MimeContent} represents message content with an associated mime
+ * The {@link MimeContent} represents message content with an associated mime
  * type.
  */
 public class MimeContent implements Cloneable, Serializable {
@@ -29,7 +29,7 @@ public class MimeContent implements Cloneable, Serializable {
   private final String type;
 
   /**
-   * Creates a new {@code MimeContent} with the provided {@code content} and
+   * Creates a new {@link MimeContent} with the provided {@code content} and
    * mime {@code type}.
    *
    * @param content The content string.
@@ -42,6 +42,8 @@ public class MimeContent implements Cloneable, Serializable {
   }
 
   /**
+   * Returns the content string.
+   *
    * @return The content string.
    */
   public String getContent() {
@@ -49,6 +51,8 @@ public class MimeContent implements Cloneable, Serializable {
   }
 
   /**
+   * Returns the type string.
+   *
    * @return The type string.
    */
   public String getType() {
