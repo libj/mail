@@ -71,7 +71,10 @@ public class MimeContent implements Cloneable, Serializable {
 
   @Override
   public int hashCode() {
-    return content.hashCode() ^ type.hashCode();
+    int hashCode = 1;
+    hashCode = 31 * hashCode + content.hashCode();
+    hashCode = 31 * hashCode + type.hashCode();
+    return hashCode;
   }
 
   @Override

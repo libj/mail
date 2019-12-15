@@ -155,13 +155,13 @@ public final class Mail {
 
     @Override
     public int hashCode() {
-      int hashCode = 17;
+      int hashCode = 1;
       hashCode = 31 * hashCode + subject.hashCode();
       hashCode = 31 * hashCode + content.hashCode();
       hashCode = 31 * hashCode + from.hashCode();
-      hashCode = 31 * hashCode + (to == null ? 0 : Arrays.hashCode(to));
-      hashCode = 31 * hashCode + (cc == null ? 0 : Arrays.hashCode(cc));
-      hashCode = 31 * hashCode + (bcc == null ? 0 : Arrays.hashCode(bcc));
+      hashCode = 31 * hashCode + Arrays.hashCode(to);
+      hashCode = 31 * hashCode + Arrays.hashCode(cc);
+      hashCode = 31 * hashCode + Arrays.hashCode(bcc);
       return hashCode;
     }
   }
@@ -350,7 +350,7 @@ public final class Mail {
 
     @Override
     public int hashCode() {
-      int hashCode = 17;
+      int hashCode = 1;
       hashCode = 31 * hashCode + host.hashCode();
       hashCode = 31 * hashCode + protocol.hashCode();
       hashCode = 31 * hashCode + port;
