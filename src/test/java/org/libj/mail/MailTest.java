@@ -27,10 +27,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class MailTest {
-  private int successCount = 0;
+  private int successCount;
 
-  private class TestMessage extends Mail.Message  {
-    public TestMessage(final String subject, final MimeContent content, final InternetAddress from, final String ... to) throws AddressException {
+  private final class TestMessage extends Mail.Message  {
+    private TestMessage(final String subject, final MimeContent content, final InternetAddress from, final String... to) throws AddressException {
       super(subject, content, from, to);
     }
 

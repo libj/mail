@@ -173,7 +173,7 @@ public final class Mail {
     private static final boolean debug;
 
     static {
-      final Logger logger = LoggerFactory.getLogger(Mail.class);
+      final Logger logger = LoggerFactory.getLogger(Sender.class);
       if (debug = logger.isDebugEnabled() || logger.isTraceEnabled())
         System.setProperty("javax.net.debug", "ssl,handshake");
     }
