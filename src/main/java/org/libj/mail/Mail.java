@@ -268,10 +268,12 @@ public final class Mail {
     /**
      * Send {@code messages} with the provided {@link PasswordAuthentication}.
      *
-     * @param authentication The {@link PasswordAuthentication} for the transport
-     *          server.
+     * @param authentication The {@link PasswordAuthentication} for the
+     *          transport server.
      * @param messages The array of {@link Message} messages.
      * @throws MessagingException If a transport error has occurred.
+     * @throws NullPointerException If {@code messages}, or any of its members
+     *           is null.
      */
     public void send(final PasswordAuthentication authentication, final Message ... messages) throws MessagingException {
       final String protocolString = protocol.toString().toLowerCase();
@@ -299,7 +301,11 @@ public final class Mail {
       session.setDebug(debug);
       final Transport transport = session.getTransport(protocolString);
       try {
-        transport.connect(host, port, authentication.getUserName(), authentication.getPassword());
+        if (authentication != null)
+          transport.connect(host, port, authentication.getUserName(), authentication.getPassword());
+        else
+          transport.connect(host, port, null, null);
+
         for (final Message message : messages) {
           logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
           session.getProperties().setProperty("mail." + protocolString + ".from", message.from.getAddress());
