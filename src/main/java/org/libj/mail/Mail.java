@@ -16,7 +16,14 @@
 
 package org.libj.mail;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
@@ -27,6 +34,12 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.slf4j.Logger;
@@ -171,6 +184,83 @@ public final class Mail {
    */
   public static class Sender {
     private static final boolean debug;
+    private static String externalIP;
+
+    private static String getExternalIP() throws IOException {
+      if (externalIP != null)
+        return externalIP;
+
+      final URL whatismyip = new URL("http://checkip.amazonaws.com");
+      try (final BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()))) {
+        return externalIP = in.readLine();
+      }
+    }
+
+    /**
+     * Do a reverse DNS lookup to find the host name associated with an IP
+     * address. Gets results more often than
+     * {@link java.net.InetAddress#getCanonicalHostName()}, but also tries the
+     * Inet implementation if reverse DNS does not work. Based on code found at
+     * http://www.codingforums.com/showpost.php?p=892349&postcount=5
+     *
+     * @param ip The IP address to look up
+     * @return The host name, if one could be found, or the IP address
+     * @throws IllegalArgumentException If the specified IP address is not in
+     *           IPv4 format.
+     */
+    private static String getHostName(final String ip) throws IOException {
+      final String[] parts = ip.split("\\.");
+      if (parts.length != 4)
+        throw new IllegalArgumentException(ip + " does not match IPv4 format");
+
+      for (final String part : parts) {
+        try {
+          final int x = Integer.parseInt(part);
+          if (x < 0 || 255 < x)
+            throw new IllegalArgumentException(ip + " does not match IPv4 format");
+        }
+        catch (final NumberFormatException e) {
+          throw new IllegalArgumentException(ip + " does not match IPv4 format");
+        }
+      }
+
+      String hostName = null;
+      DirContext context = null;
+      try {
+        final Hashtable<String,String> environment = new Hashtable<>();
+        environment.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
+        context = new InitialDirContext(environment);
+        final String reverseDnsDomain = parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0] + ".in-addr.arpa";
+        final Attributes attrs = context.getAttributes(reverseDnsDomain, new String[] {"PTR"});
+        for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) {
+          final Attribute attr = enumeration.next();
+          final String attrId = attr.getID();
+          for (final Enumeration<?> values = attr.getAll(); values.hasMoreElements();) {
+            hostName = values.nextElement().toString();
+            if ("PTR".equals(attrId)) {
+              final int len = hostName.length();
+              if (len > 1 && hostName.charAt(len - 1) == '.')
+                hostName = hostName.substring(0, len - 1);
+
+              break;
+            }
+          }
+        }
+      }
+      catch (final NamingException e) {
+      }
+      finally {
+        if (context != null) {
+          try {
+            context.close();
+          }
+          catch (final NamingException e) {
+          }
+        }
+      }
+
+      return hostName != null ? hostName : InetAddress.getByName(ip).getCanonicalHostName();
+    }
 
     static {
       final Logger logger = LoggerFactory.getLogger(Sender.class);
@@ -217,6 +307,13 @@ public final class Mail {
         defaultProperties.put("mail." + protocolString + ".debug", "true");
 
       defaultProperties.put("mail." + protocolString + ".host", host);
+      try {
+        defaultProperties.put("mail." + protocolString + ".localhost", getHostName(getExternalIP()));
+      }
+      catch (final IOException e) {
+        defaultProperties.put("mail." + protocolString + ".localhost", "localhost.localdomain");
+      }
+
       defaultProperties.put("mail." + protocolString + ".port", port);
 
       defaultProperties.put("mail." + protocolString + ".quitwait", "false");
@@ -284,8 +381,7 @@ public final class Mail {
         // the following 2 lines were causing "Relaying denied. Proper
         // authentication required." messages from sendmail
         // properties.put("mail." + protocolString + ".ehlo", "false");
-        // properties.put("mail." + protocolString + ".user",
-        // credentials.getUsername());
+        // properties.put("mail." + protocolString + ".user", credentials.getUsername());
 
         session = Session.getInstance(properties, new Authenticator() {
           @Override
