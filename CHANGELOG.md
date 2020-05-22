@@ -1,6 +1,11 @@
 # Changes by Version
 
-## v0.4.2 (2019-07-21)
+## [v0.4.3](https://github.com/libj/mail/compare/467033f9dbc218fdeb03b039157e4fe3195276ee..HEAD) (2020-05-23)
+* Add `getHostName` and `getExternalIP` to `Mail.Sender`.
+* Set default `"mail.smtps?.localhost"` property.
+* Improve javadocs.
+
+## [v0.4.2](https://github.com/libj/mail/compare/13327990275168a7e917a376a0f9a41fef3e88d5..467033f9dbc218fdeb03b039157e4fe3195276ee) (2019-07-21)
 * Make `MimeContent` `Cloneable` and `Serializable`.
 * Make `Mail` uninstantiable.
 * Upgrade `org.slf4j:slf4j-api:1.7.25` to `1.7.26`.
