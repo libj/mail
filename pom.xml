@@ -22,10 +22,10 @@
   <parent>
     <groupId>org.libj</groupId>
     <artifactId>libj</artifactId>
-    <version>0.9.7</version>
+    <version>0.9.8-SNAPSHOT</version>
   </parent>
   <artifactId>mail</artifactId>
-  <version>0.4.3</version>
+  <version>0.4.4-SNAPSHOT</version>
   <name>LibJ Mail</name>
   <description>
     Supplementary extensions to the java.mail package.

@@ -1,6 +1,8 @@
 # Changes by Version
 
-## [v0.4.3](https://github.com/libj/mail/compare/467033f9dbc218fdeb03b039157e4fe3195276ee..HEAD) (2020-05-23)
+## [v0.4.4-SNAPSHOT](https://github.com/libj/mail/compare/14af7db24e794ad25f2c3b9a589d917a96dd0e29..HEAD)
+
+## [v0.4.3](https://github.com/libj/mail/compare/467033f9dbc218fdeb03b039157e4fe3195276ee..14af7db24e794ad25f2c3b9a589d917a96dd0e29) (2020-05-23)
 * Add `getHostName` and `getExternalIP` to `Mail.Sender`.
 * Set default `"mail.smtps?.localhost"` property.
 * Improve javadocs.
