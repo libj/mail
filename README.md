@@ -4,6 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/libj/mail/badge.svg?branch=master)](https://coveralls.io/github/libj/mail?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/org.libj/mail.svg?1)](https://www.javadoc.io/doc/org.libj/mail)
 [![Released Version](https://img.shields.io/maven-central/v/org.libj/mail.svg?1)](https://mvnrepository.com/artifact/org.libj/mail)
+![Snapshot Version](https://img.shields.io/nexus/s/org.libj/mail?label=maven-snapshot&server=https%3A%2F%2Foss.sonatype.org)
 
 ## Introduction
 
