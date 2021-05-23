@@ -23,7 +23,9 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
@@ -61,6 +63,13 @@ public final class Mail {
    */
   public enum Protocol {
     SMTP, SMTPS
+  }
+
+  /**
+   * Enum representing the TLS specification.
+   */
+  public enum TLS {
+    DISABLED, ENABLED, REQUIRED
   }
 
   /**
@@ -183,7 +192,6 @@ public final class Mail {
    * Class representing the SMTP(S) sender.
    */
   public static class Sender {
-    private static final boolean debug;
     private static String externalIP;
 
     private static String getExternalIP() throws IOException {
@@ -203,89 +211,96 @@ public final class Mail {
      * Inet implementation if reverse DNS does not work. Based on code found at
      * http://www.codingforums.com/showpost.php?p=892349&postcount=5
      *
-     * @param ip The IP address to look up
      * @return The host name, if one could be found, or the IP address
-     * @throws IllegalArgumentException If the specified IP address is not in
-     *           IPv4 format.
      */
-    private static String getHostName(final String ip) throws IOException {
-      final String[] parts = ip.split("\\.");
-      if (parts.length != 4)
-        throw new IllegalArgumentException(ip + " does not match IPv4 format");
-
-      for (final String part : parts) {
-        try {
-          final int x = Integer.parseInt(part);
-          if (x < 0 || 255 < x)
-            throw new IllegalArgumentException(ip + " does not match IPv4 format");
-        }
-        catch (final NumberFormatException e) {
-          throw new IllegalArgumentException(ip + " does not match IPv4 format");
-        }
-      }
-
-      String hostName = null;
-      DirContext context = null;
+    private static String getHostName() {
       try {
-        final Hashtable<String,String> environment = new Hashtable<>();
-        environment.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
-        context = new InitialDirContext(environment);
-        final String reverseDnsDomain = parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0] + ".in-addr.arpa";
-        final Attributes attrs = context.getAttributes(reverseDnsDomain, new String[] {"PTR"});
-        for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) {
-          final Attribute attr = enumeration.next();
-          final String attrId = attr.getID();
-          for (final Enumeration<?> values = attr.getAll(); values.hasMoreElements();) {
-            hostName = values.nextElement().toString();
-            if ("PTR".equals(attrId)) {
-              final int len = hostName.length();
-              if (len > 1 && hostName.charAt(len - 1) == '.')
-                hostName = hostName.substring(0, len - 1);
+        final String ip = getExternalIP();
+        final String[] parts = ip.split("\\.");
+        if (parts.length != 4)
+          throw new IllegalArgumentException(ip + " does not match IPv4 format");
 
-              break;
+        for (final String part : parts) {
+          try {
+            final int x = Integer.parseInt(part);
+            if (x < 0 || 255 < x)
+              throw new IllegalArgumentException(ip + " does not match IPv4 format");
+          }
+          catch (final NumberFormatException e) {
+            throw new IllegalArgumentException(ip + " does not match IPv4 format");
+          }
+        }
+
+        String hostName = null;
+        DirContext context = null;
+        try {
+          final Hashtable<String,String> environment = new Hashtable<>();
+          environment.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
+          context = new InitialDirContext(environment);
+          final String reverseDnsDomain = parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0] + ".in-addr.arpa";
+          final Attributes attrs = context.getAttributes(reverseDnsDomain, new String[] {"PTR"});
+          for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) {
+            final Attribute attr = enumeration.next();
+            final String attrId = attr.getID();
+            for (final Enumeration<?> values = attr.getAll(); values.hasMoreElements();) {
+              hostName = values.nextElement().toString();
+              if ("PTR".equals(attrId)) {
+                final int len = hostName.length();
+                if (len > 1 && hostName.charAt(len - 1) == '.')
+                  hostName = hostName.substring(0, len - 1);
+
+                break;
+              }
             }
           }
         }
-      }
-      catch (final NamingException e) {
-      }
-      finally {
-        if (context != null) {
-          try {
-            context.close();
-          }
-          catch (final NamingException e) {
+        catch (final NamingException e) {
+        }
+        finally {
+          if (context != null) {
+            try {
+              context.close();
+            }
+            catch (final NamingException e) {
+            }
           }
         }
+
+        return hostName != null ? hostName : InetAddress.getByName(ip).getCanonicalHostName();
       }
-
-      return hostName != null ? hostName : InetAddress.getByName(ip).getCanonicalHostName();
-    }
-
-    static {
-      final Logger logger = LoggerFactory.getLogger(Sender.class);
-      if (debug = logger.isDebugEnabled() || logger.isTraceEnabled())
-        System.setProperty("javax.net.debug", "ssl,handshake");
+      catch (final IOException e) {
+        return "localhost.localdomain";
+      }
     }
 
     private final Protocol protocol;
+    private final TLS tls;
     private final String host;
     private final int port;
-    private final Properties defaultProperties;
+    private final boolean debug;
+    private final HashMap<String,String> defaultProperties;
 
     /**
      * Creates a new {@link Sender} with the specified parameters.
      *
      * @param protocol The mail transport {@link Protocol}.
+     * @param tls The TLS specification {@link Protocol}.
      * @param host The transport server host.
      * @param port The transport server port.
+     * @param properties {@link Properties} (such as "mail.debug=true" or
+     *          "mail.smtps.debug=true") to be applied to
+     *          {@link Session#getInstance(Properties)}.
      * @throws IllegalArgumentException If {@code protocol} or {@code host} are
      *           null, or if {@code port} is outside the range (1, 65535).
      */
-    public Sender(final Protocol protocol, final String host, final int port) {
+    public Sender(final Protocol protocol, final TLS tls, final String host, final int port, final Map<String,String> properties) {
       this.protocol = protocol;
       if (protocol == null)
         throw new IllegalArgumentException("protocol == null");
+
+      this.tls = tls;
+      if (tls == null)
+        throw new IllegalArgumentException("tls == null");
 
       this.host = host;
       if (host == null)
@@ -295,39 +310,60 @@ public final class Mail {
       if (port < 1 || 65535 < port)
         throw new IllegalArgumentException("port [" + port + "] <> (1, 65535)");
 
-      final String protocolString = this.protocol.toString().toLowerCase();
+      this.defaultProperties = new HashMap<>();
+      if (properties != null) {
+        this.debug = "true".equals(properties.get("mail.debug"));
+        defaultProperties.putAll(properties);
+      }
+      else {
+        this.debug = false;
+      }
 
-      this.defaultProperties = new Properties();
-      if (debug)
-        defaultProperties.put("mail.debug", "true");
-
+      final String protocolString = protocol.toString().toLowerCase();
       defaultProperties.put("mail.transport.protocol", protocolString);
-
-      if (debug)
-        defaultProperties.put("mail." + protocolString + ".debug", "true");
-
       defaultProperties.put("mail." + protocolString + ".host", host);
-      try {
-        defaultProperties.put("mail." + protocolString + ".localhost", getHostName(getExternalIP()));
-      }
-      catch (final IOException e) {
-        defaultProperties.put("mail." + protocolString + ".localhost", "localhost.localdomain");
-      }
-
-      defaultProperties.put("mail." + protocolString + ".port", port);
-
+      defaultProperties.put("mail." + protocolString + ".localhost", getHostName());
+      defaultProperties.put("mail." + protocolString + ".port", String.valueOf(port));
       defaultProperties.put("mail." + protocolString + ".quitwait", "false");
 
-      defaultProperties.put("mail." + protocolString + ".ssl.trust", "*");
-      defaultProperties.put("mail." + protocolString + ".starttls.enable", "true");
+      String sslProtocols = null;
+      if (tls != TLS.DISABLED) {
+        sslProtocols = "TLSv1.2";
+        defaultProperties.put("mail." + protocolString + ".starttls.enable", "true");
+      }
 
-      if (this.protocol == Protocol.SMTPS) {
+      if (tls == TLS.REQUIRED)
+        defaultProperties.put("mail." + protocolString + ".starttls.required", "true");
+
+      defaultProperties.put("mail." + protocolString + ".ssl.trust", "*");
+      if (protocol == Protocol.SMTPS) {
+        if (sslProtocols != null)
+          sslProtocols += " SSLv3";
+        else
+          sslProtocols = "SSLv3";
+
         defaultProperties.put("mail." + protocolString + ".ssl.enable", "true");
-        defaultProperties.put("mail." + protocolString + ".ssl.protocols", "SSLv3 TLSv1");
         defaultProperties.put("mail." + protocolString + ".socketFactory.class", SSLSocketFactory.class.getName());
-        defaultProperties.put("mail." + protocolString + ".socketFactory.port", port);
+        defaultProperties.put("mail." + protocolString + ".socketFactory.port", String.valueOf(port));
         defaultProperties.put("mail." + protocolString + ".socketFactory.fallback", "false");
       }
+
+      if (sslProtocols != null)
+        defaultProperties.put("mail." + protocolString + ".ssl.protocols", sslProtocols);
+    }
+
+    /**
+     * Creates a new {@link Sender} with the specified parameters.
+     *
+     * @param protocol The mail transport {@link Protocol}.
+     * @param tls The TLS specification {@link Protocol}.
+     * @param host The transport server host.
+     * @param port The transport server port.
+     * @throws IllegalArgumentException If {@code protocol} or {@code host} are
+     *           null, or if {@code port} is outside the range (1, 65535).
+     */
+    public Sender(final Protocol protocol, final TLS tls, final String host, final int port) {
+      this(protocol, tls, host, port, null);
     }
 
     /**
@@ -374,7 +410,9 @@ public final class Mail {
      */
     public void send(final PasswordAuthentication authentication, final Message ... messages) throws MessagingException {
       final String protocolString = protocol.toString().toLowerCase();
-      final Properties properties = new Properties(defaultProperties);
+      final Properties properties = new Properties();
+      properties.putAll(defaultProperties);
+
       final Session session;
       if (authentication != null) {
         properties.put("mail." + protocolString + ".auth", "true");
@@ -394,7 +432,11 @@ public final class Mail {
         session = Session.getInstance(properties);
       }
 
-      session.setDebug(debug);
+      if (debug) {
+        session.setDebug(debug);
+        properties.list(System.err);
+      }
+
       final Transport transport = session.getTransport(protocolString);
       try {
         if (authentication != null)
@@ -447,13 +489,14 @@ public final class Mail {
         return false;
 
       final Sender that = (Sender)obj;
-      return host.equals(that.host) && protocol == that.protocol && port == that.port;
+      return host.equals(that.host) && protocol == that.protocol && tls == that.tls && port == that.port;
     }
 
     @Override
     public int hashCode() {
       int hashCode = 1;
       hashCode = 31 * hashCode + host.hashCode();
+      hashCode = 31 * hashCode + tls.hashCode();
       hashCode = 31 * hashCode + protocol.hashCode();
       hashCode = 31 * hashCode + port;
       return hashCode;

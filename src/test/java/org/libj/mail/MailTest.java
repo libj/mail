@@ -49,7 +49,7 @@ public class MailTest {
   @Ignore
   public void testClient() throws Exception {
     final PasswordAuthentication smtpCredentials = new PasswordAuthentication("filehost", "FileH0st");
-    final Mail.Sender sender = new Mail.Sender(Mail.Protocol.SMTP, "smtp.safris.com", 465);
+    final Mail.Sender sender = new Mail.Sender(Mail.Protocol.SMTP, Mail.TLS.ENABLED, "smtp.safris.com", 465);
     final Mail.Message[] messages = new TestMessage[] {
       new TestMessage("test1", new MimeContent("test1", "text/html"), new InternetAddress("seva@safris.org", "org"), "seva.safris@gmail.com"),
       new TestMessage("test2", new MimeContent("test2", "text/html"), new InternetAddress("seva@safris.com", "com"), "safris@berkeley.edu"),
