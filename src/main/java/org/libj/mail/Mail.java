@@ -59,17 +59,14 @@ public final class Mail {
   }
 
   /**
-   * Enum representing the mail transfer protocol.
+   * Enum representing options to be used in
+   * {@link Sender#Sender(String,int,Option...)} and
+   * {@link Sender#Sender(String,int,Map,Option...)}.
    */
-  public enum Protocol {
-    SMTP, SMTPS
-  }
-
-  /**
-   * Enum representing the TLS specification.
-   */
-  public enum TLS {
-    DISABLED, ENABLED, REQUIRED
+  public enum Option {
+    DEBUG,
+    SSL,
+    TLS
   }
 
   /**
@@ -273,35 +270,28 @@ public final class Mail {
       }
     }
 
-    private final Protocol protocol;
-    private final TLS tls;
     private final String host;
     private final int port;
-    private final boolean debug;
     private final HashMap<String,String> defaultProperties;
+
+    private String protocol = "smtp";
+    private boolean ssl;
+    private boolean tls;
+    private boolean debug;
 
     /**
      * Creates a new {@link Sender} with the specified parameters.
      *
-     * @param protocol The mail transport {@link Protocol}.
-     * @param tls The TLS specification {@link Protocol}.
      * @param host The transport server host.
      * @param port The transport server port.
      * @param properties {@link Properties} (such as "mail.debug=true" or
      *          "mail.smtps.debug=true") to be applied to
      *          {@link Session#getInstance(Properties)}.
+     * @param options The {@link Option}s.
      * @throws IllegalArgumentException If {@code protocol} or {@code host} are
      *           null, or if {@code port} is outside the range (1, 65535).
      */
-    public Sender(final Protocol protocol, final TLS tls, final String host, final int port, final Map<String,String> properties) {
-      this.protocol = protocol;
-      if (protocol == null)
-        throw new IllegalArgumentException("protocol == null");
-
-      this.tls = tls;
-      if (tls == null)
-        throw new IllegalArgumentException("tls == null");
-
+    public Sender(final String host, final int port, final Map<String,String> properties, final Option ... options) {
       this.host = host;
       if (host == null)
         throw new IllegalArgumentException("host == null");
@@ -311,59 +301,67 @@ public final class Mail {
         throw new IllegalArgumentException("port [" + port + "] <> (1, 65535)");
 
       this.defaultProperties = new HashMap<>();
-      if (properties != null) {
-        this.debug = "true".equals(properties.get("mail.debug"));
+      if (properties != null)
         defaultProperties.putAll(properties);
-      }
-      else {
-        this.debug = false;
-      }
-
-      final String protocolString = protocol.toString().toLowerCase();
-      defaultProperties.put("mail.transport.protocol", protocolString);
-      defaultProperties.put("mail." + protocolString + ".host", host);
-      defaultProperties.put("mail." + protocolString + ".localhost", getHostName());
-      defaultProperties.put("mail." + protocolString + ".port", String.valueOf(port));
-      defaultProperties.put("mail." + protocolString + ".quitwait", "false");
 
       String sslProtocols = null;
-      if (tls != TLS.DISABLED) {
-        sslProtocols = "TLSv1.2";
-        defaultProperties.put("mail." + protocolString + ".starttls.enable", "true");
+      if (options != null) {
+        for (final Option option : options) {
+          if (option == Option.TLS) {
+            tls = true;
+            sslProtocols = "TLSv1.2";
+            defaultProperties.put("mail." + protocol + ".starttls.enable", "true");
+            defaultProperties.put("mail." + protocol + ".starttls.required", "true");
+          }
+          else if (option == Option.SSL) {
+            ssl = true;
+            protocol = "smtps";
+            if (sslProtocols != null)
+              sslProtocols += " SSLv3";
+            else
+              sslProtocols = "SSLv3";
+
+            defaultProperties.put("mail." + protocol + ".ssl.enable", "true");
+            defaultProperties.put("mail." + protocol + ".socketFactory.class", SSLSocketFactory.class.getName());
+            defaultProperties.put("mail." + protocol + ".socketFactory.port", String.valueOf(port));
+            defaultProperties.put("mail." + protocol + ".socketFactory.fallback", "false");
+          }
+          else if (option == Option.DEBUG) {
+            debug = true;
+          }
+          else if (option != null) {
+            throw new UnsupportedOperationException("Unsupported Option: " + option);
+          }
+        }
       }
 
-      if (tls == TLS.REQUIRED)
-        defaultProperties.put("mail." + protocolString + ".starttls.required", "true");
-
-      defaultProperties.put("mail." + protocolString + ".ssl.trust", "*");
-      if (protocol == Protocol.SMTPS) {
-        if (sslProtocols != null)
-          sslProtocols += " SSLv3";
-        else
-          sslProtocols = "SSLv3";
-
-        defaultProperties.put("mail." + protocolString + ".ssl.enable", "true");
-        defaultProperties.put("mail." + protocolString + ".socketFactory.class", SSLSocketFactory.class.getName());
-        defaultProperties.put("mail." + protocolString + ".socketFactory.port", String.valueOf(port));
-        defaultProperties.put("mail." + protocolString + ".socketFactory.fallback", "false");
+      if (debug) {
+        defaultProperties.put("mail.debug", "true");
+        defaultProperties.put("mail." + protocol + ".debug", "true");
       }
 
       if (sslProtocols != null)
-        defaultProperties.put("mail." + protocolString + ".ssl.protocols", sslProtocols);
+        defaultProperties.put("mail." + protocol + ".ssl.protocols", sslProtocols);
+
+      defaultProperties.put("mail.transport.protocol", protocol);
+      defaultProperties.put("mail." + protocol + ".host", host);
+      defaultProperties.put("mail." + protocol + ".localhost", getHostName());
+      defaultProperties.put("mail." + protocol + ".port", String.valueOf(port));
+      defaultProperties.put("mail." + protocol + ".quitwait", "false");
+      defaultProperties.put("mail." + protocol + ".ssl.trust", "*");
     }
 
     /**
      * Creates a new {@link Sender} with the specified parameters.
      *
-     * @param protocol The mail transport {@link Protocol}.
-     * @param tls The TLS specification {@link Protocol}.
      * @param host The transport server host.
      * @param port The transport server port.
+     * @param options The {@link Option}.
      * @throws IllegalArgumentException If {@code protocol} or {@code host} are
      *           null, or if {@code port} is outside the range (1, 65535).
      */
-    public Sender(final Protocol protocol, final TLS tls, final String host, final int port) {
-      this(protocol, tls, host, port, null);
+    public Sender(final String host, final int port, final Option ... options) {
+      this(host, port, null, options);
     }
 
     /**
@@ -409,13 +407,12 @@ public final class Mail {
      *           is null.
      */
     public void send(final PasswordAuthentication authentication, final Message ... messages) throws MessagingException {
-      final String protocolString = protocol.toString().toLowerCase();
       final Properties properties = new Properties();
       properties.putAll(defaultProperties);
 
       final Session session;
       if (authentication != null) {
-        properties.put("mail." + protocolString + ".auth", "true");
+        properties.put("mail." + protocol + ".auth", "true");
         // the following 2 lines were causing "Relaying denied. Proper
         // authentication required." messages from sendmail
         // properties.put("mail." + protocolString + ".ehlo", "false");
@@ -437,7 +434,7 @@ public final class Mail {
         properties.list(System.err);
       }
 
-      final Transport transport = session.getTransport(protocolString);
+      final Transport transport = session.getTransport(protocol);
       try {
         if (authentication != null)
           transport.connect(host, port, authentication.getUserName(), authentication.getPassword());
@@ -446,7 +443,7 @@ public final class Mail {
 
         for (final Message message : messages) {
           logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
-          session.getProperties().setProperty("mail." + protocolString + ".from", message.from.getAddress());
+          session.getProperties().setProperty("mail." + protocol + ".from", message.from.getAddress());
           final MimeMessage mimeMessage = new MimeMessage(session);
 
           try {
@@ -489,16 +486,16 @@ public final class Mail {
         return false;
 
       final Sender that = (Sender)obj;
-      return host.equals(that.host) && protocol == that.protocol && tls == that.tls && port == that.port;
+      return host.equals(that.host) && port == that.port && ssl == that.ssl && tls == that.tls;
     }
 
     @Override
     public int hashCode() {
       int hashCode = 1;
       hashCode = 31 * hashCode + host.hashCode();
-      hashCode = 31 * hashCode + tls.hashCode();
-      hashCode = 31 * hashCode + protocol.hashCode();
       hashCode = 31 * hashCode + port;
+      hashCode = 31 * hashCode + Boolean.hashCode(ssl);
+      hashCode = 31 * hashCode + Boolean.hashCode(tls);
       return hashCode;
     }
   }
