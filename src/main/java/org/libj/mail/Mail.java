@@ -59,17 +59,6 @@ public final class Mail {
   }
 
   /**
-   * Enum representing options to be used in
-   * {@link Sender#Sender(String,int,Option...)} and
-   * {@link Sender#Sender(String,int,Map,Option...)}.
-   */
-  public enum Option {
-    DEBUG,
-    SSL,
-    TLS
-  }
-
-  /**
    * Class representing a email message.
    */
   public static class Message {
@@ -188,7 +177,141 @@ public final class Mail {
   /**
    * Class representing the SMTP(S) sender.
    */
-  public static class Sender {
+  public static class Dispatch {
+    public static class Builder {
+      private final String host;
+      private final int port;
+
+      private boolean ssl;
+      private boolean tls;
+
+      private int connectionTimeout = -1;
+      private int readTimeout = -1;
+      private int writeTimeout = -1;
+
+      private Map<String,String> properties;
+      private boolean debug;
+
+      /**
+       * Create a new {@link Builder} with the specified {@code host} and
+       * {@code port}.
+       *
+       * @param host The SMTP server to connect to.
+       * @param port The SMTP server port to connect to.
+       * @throws IllegalArgumentException If {@code host} is null, or if
+       *           {@code port} is outside the range of [1, 65535].
+       */
+      public Builder(final String host, final int port) {
+        this.host = host;
+        if (host == null)
+          throw new IllegalArgumentException("host == null");
+
+        this.port = port;
+        if (port < 1 || 65535 < port)
+          throw new IllegalArgumentException("port [" + port + "] <> (1, 65535)");
+      }
+
+      /**
+       * If set to {@code true}, use SSL to connect to host.
+       *
+       * @param enabled Whether SSL is to be enabled.
+       * @return {@code this} {@link Builder}.
+       */
+      public Builder withSsl(final boolean enabled) {
+        this.ssl = enabled;
+        return this;
+      }
+
+      /**
+       * If set to {@code true}, use TLS to connect to host.
+       *
+       * @param enabled Whether TLS is to be enabled.
+       * @return {@code this} {@link Builder}.
+       */
+      public Builder withTls(final boolean enabled) {
+        this.tls = enabled;
+        return this;
+      }
+
+      /**
+       * Set the socket connection timeout value in milliseconds. This timeout
+       * is implemented by {@link java.net.Socket}. Default is infinite timeout.
+       *
+       * @param timeout The socket connection timeout value in milliseconds.
+       * @return {@code this} {@link Builder}.
+       */
+      public Builder withConnectionTimeout(final int timeout) {
+        this.connectionTimeout = timeout;
+        return this;
+      }
+
+      /**
+       * Set the socket read timeout value in milliseconds. This timeout is
+       * implemented by {@link java.net.Socket}. Default is infinite timeout.
+       *
+       * @param timeout The socket read timeout value in milliseconds.
+       * @return {@code this} {@link Builder}.
+       */
+      public Builder withReadTimeout(final int timeout) {
+        this.readTimeout = timeout;
+        return this;
+      }
+
+      /**
+       * Set the socket write timeout value in milliseconds. This timeout is
+       * implemented by using a
+       * {@link java.util.concurrent.ScheduledExecutorService} per connection
+       * that schedules a thread to close the socket if the timeout expires.
+       * Thus, the overhead of using this timeout is one thread per connection.
+       * Default is infinite timeout.
+       *
+       * @param timeout The socket write timeout value in milliseconds.
+       * @return {@code this} {@link Builder}.
+       */
+      public Builder withWriteTimeout(final int timeout) {
+        this.writeTimeout = timeout;
+        return this;
+      }
+
+      /**
+       * Whether debugging is to be outputted from {@link Session}.
+       *
+       * @param enabled Whether debugging is to be outputted from
+       *          {@link Session}.
+       * @return {@code this} {@link Builder}.
+       */
+      public Builder withDebug(final boolean enabled) {
+        this.debug = enabled;
+        return this;
+      }
+
+      /**
+       * Provide properties to be directly applied to the {@link Session}.
+       *
+       * @param properties The properties to be directly applied to the
+       *          {@link Session}.
+       * @return {@code this} {@link Builder}.
+       * @see <a href=
+       *      "https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html#properties">Session
+       *      Properties</a>
+       */
+      public Builder withProperties(final Map<String,String> properties) {
+        this.properties = properties;
+        return this;
+      }
+
+      /**
+       * Returns a new {@link Dispatch} with the options specified in this
+       * {@link Builder}.
+       *
+       * @return A new {@link Dispatch} with the options specified in this
+       *         {@link Builder}.
+       */
+      public Dispatch build() {
+        return new Dispatch(host, port, ssl, tls, connectionTimeout, readTimeout, writeTimeout, properties, debug);
+      }
+    }
+
     private static String externalIP;
 
     private static String getExternalIP() throws IOException {
@@ -272,72 +395,39 @@ public final class Mail {
 
     private final String host;
     private final int port;
-    private final HashMap<String,String> defaultProperties;
+    private final HashMap<String,String> defaultProperties = new HashMap<>();
 
-    private String protocol = "smtp";
-    private boolean ssl;
-    private boolean tls;
-    private boolean debug;
+    private final String protocol;
+    private final boolean debug;
 
-    /**
-     * Creates a new {@link Sender} with the specified parameters.
-     *
-     * @param host The transport server host.
-     * @param port The transport server port.
-     * @param properties {@link Properties} (such as "mail.debug=true" or
-     *          "mail.smtps.debug=true") to be applied to
-     *          {@link Session#getInstance(Properties)}.
-     * @param options The {@link Option}s.
-     * @throws IllegalArgumentException If {@code protocol} or {@code host} are
-     *           null, or if {@code port} is outside the range (1, 65535).
-     */
-    public Sender(final String host, final int port, final Map<String,String> properties, final Option ... options) {
+    private Dispatch(final String host, final int port, final boolean ssl, final boolean tls, final int connectionTimeout, final int readTimeout, final int writeTimeout, final Map<String,String> properties, final boolean debug) {
       this.host = host;
-      if (host == null)
-        throw new IllegalArgumentException("host == null");
-
       this.port = port;
-      if (port < 1 || 65535 < port)
-        throw new IllegalArgumentException("port [" + port + "] <> (1, 65535)");
-
-      this.defaultProperties = new HashMap<>();
       if (properties != null)
         defaultProperties.putAll(properties);
 
       String sslProtocols = null;
-      if (options != null) {
-        for (final Option option : options) {
-          if (option == Option.TLS) {
-            tls = true;
-            sslProtocols = "TLSv1.2";
-            defaultProperties.put("mail." + protocol + ".starttls.enable", "true");
-            defaultProperties.put("mail." + protocol + ".starttls.required", "true");
-          }
-          else if (option == Option.SSL) {
-            ssl = true;
-            protocol = "smtps";
-            if (sslProtocols != null)
-              sslProtocols += " SSLv3";
-            else
-              sslProtocols = "SSLv3";
+      if (ssl) {
+        protocol = "smtps";
+        sslProtocols = "SSLv3";
 
-            defaultProperties.put("mail." + protocol + ".ssl.enable", "true");
-            defaultProperties.put("mail." + protocol + ".socketFactory.class", SSLSocketFactory.class.getName());
-            defaultProperties.put("mail." + protocol + ".socketFactory.port", String.valueOf(port));
-            defaultProperties.put("mail." + protocol + ".socketFactory.fallback", "false");
-          }
-          else if (option == Option.DEBUG) {
-            debug = true;
-          }
-          else if (option != null) {
-            throw new UnsupportedOperationException("Unsupported Option: " + option);
-          }
-        }
+        defaultProperties.put("mail." + protocol + ".ssl.enable", "true");
+        defaultProperties.put("mail." + protocol + ".socketFactory.class", SSLSocketFactory.class.getName());
+        defaultProperties.put("mail." + protocol + ".socketFactory.port", String.valueOf(port));
+        defaultProperties.put("mail." + protocol + ".socketFactory.fallback", "false");
+      }
+      else {
+        protocol = "smtp";
       }
 
-      if (debug) {
-        defaultProperties.put("mail.debug", "true");
-        defaultProperties.put("mail." + protocol + ".debug", "true");
+      if (tls) {
+        if (sslProtocols != null)
+          sslProtocols += " TLSv1.2";
+        else
+          sslProtocols = "TLSv1.2";
+
+        defaultProperties.put("mail." + protocol + ".starttls.enable", "true");
+        defaultProperties.put("mail." + protocol + ".starttls.required", "true");
       }
 
       if (sslProtocols != null)
@@ -349,19 +439,20 @@ public final class Mail {
       defaultProperties.put("mail." + protocol + ".port", String.valueOf(port));
       defaultProperties.put("mail." + protocol + ".quitwait", "false");
       defaultProperties.put("mail." + protocol + ".ssl.trust", "*");
-    }
 
-    /**
-     * Creates a new {@link Sender} with the specified parameters.
-     *
-     * @param host The transport server host.
-     * @param port The transport server port.
-     * @param options The {@link Option}.
-     * @throws IllegalArgumentException If {@code protocol} or {@code host} are
-     *           null, or if {@code port} is outside the range (1, 65535).
-     */
-    public Sender(final String host, final int port, final Option ... options) {
-      this(host, port, null, options);
+      if (connectionTimeout != -1)
+        defaultProperties.put("mail." + protocol + ".connectiontimeout", String.valueOf(connectionTimeout));
+
+      if (readTimeout != -1)
+        defaultProperties.put("mail." + protocol + ".timeout", String.valueOf(readTimeout));
+
+      if (writeTimeout != -1)
+        defaultProperties.put("mail." + protocol + ".writetimeout", String.valueOf(writeTimeout));
+
+      if (this.debug = debug) {
+        defaultProperties.put("mail.debug", "true");
+        defaultProperties.put("mail." + protocol + ".debug", "true");
+      }
     }
 
     /**
@@ -482,21 +573,16 @@ public final class Mail {
       if (obj == this)
         return true;
 
-      if (!(obj instanceof Sender))
+      if (!(obj instanceof Dispatch))
         return false;
 
-      final Sender that = (Sender)obj;
-      return host.equals(that.host) && port == that.port && ssl == that.ssl && tls == that.tls;
+      final Dispatch that = (Dispatch)obj;
+      return defaultProperties.equals(that.defaultProperties);
     }
 
     @Override
     public int hashCode() {
-      int hashCode = 1;
-      hashCode = 31 * hashCode + host.hashCode();
-      hashCode = 31 * hashCode + port;
-      hashCode = 31 * hashCode + Boolean.hashCode(ssl);
-      hashCode = 31 * hashCode + Boolean.hashCode(tls);
-      return hashCode;
+      return defaultProperties.hashCode();
     }
   }
 }
