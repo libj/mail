@@ -1,6 +1,6 @@
 # LibJ Mail
 
-[![Build Status](https://travis-ic.org/libj/mail.svg?branch=master)](https://travis-ic.org/libj/mail)
+[![Build Status](https://github.com/libj/mail/workflows/build.yml/badge.svg)](https://github.com/libj/mail/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/libj/mail/badge.svg?branch=master)](https://coveralls.io/github/libj/mail?branch=master)
 [![Javadocs](https://www.javadoc.io/badge/org.libj/mail.svg)](https://www.javadoc.io/doc/org.libj/mail)
 [![Released Version](https://img.shields.io/maven-central/v/org.libj/mail.svg)](https://mvnrepository.com/artifact/org.libj/mail)
