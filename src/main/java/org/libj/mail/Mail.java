@@ -533,7 +533,9 @@ public final class Mail {
           transport.connect(host, port, null, null);
 
         for (final Message message : messages) {
-          logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
+          if (logger.isDebugEnabled())
+            logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
+
           session.getProperties().setProperty("mail." + protocol + ".from", message.from.getAddress());
           final MimeMessage mimeMessage = new MimeMessage(session);
 
