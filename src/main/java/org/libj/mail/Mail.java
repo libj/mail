@@ -481,13 +481,15 @@ public final class Mail {
      *
      * @param authentication The {@link PasswordAuthentication} for the
      *          transport server.
-     * @param messages The array of {@link Message} messages.
+     * @param message The {@linkplain Message message} to send.
+     * @return The {@link MimeMessage#getMessageID() messageID} of the sent
+     *         message.
      * @throws MessagingException If a transport error has occurred.
-     * @throws IllegalArgumentException If {@code messages}, or any of its
-     *           members is null.
+     * @throws IllegalArgumentException If {@code message} is null.
      */
-    public void send(final PasswordAuthentication authentication, final Message ... messages) throws MessagingException {
-      Assertions.assertNotNull(messages);
+    public String send(final PasswordAuthentication authentication, final Message message) throws MessagingException {
+      Assertions.assertNotNull(message);
+
       final Properties properties = new Properties();
       properties.putAll(defaultProperties);
 
@@ -522,38 +524,37 @@ public final class Mail {
         else
           transport.connect(host, port, null, null);
 
-        for (final Message message : messages) {
-          Assertions.assertNotNull(message);
-          if (logger.isDebugEnabled())
-            logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
+        Assertions.assertNotNull(message);
+        if (logger.isDebugEnabled())
+          logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
 
-          session.getProperties().setProperty("mail." + protocol + ".from", message.from.getAddress());
-          final MimeMessage mimeMessage = new MimeMessage(session);
+        session.getProperties().setProperty("mail." + protocol + ".from", message.from.getAddress());
+        final MimeMessage mimeMessage = new MimeMessage(session);
 
-          try {
-            mimeMessage.setFrom(message.from);
+        try {
+          mimeMessage.setFrom(message.from);
 
-            if (message.to != null)
-              mimeMessage.setRecipients(MimeMessage.RecipientType.TO, message.to);
+          if (message.to != null)
+            mimeMessage.setRecipients(MimeMessage.RecipientType.TO, message.to);
 
-            if (message.cc != null)
-              mimeMessage.setRecipients(MimeMessage.RecipientType.CC, message.cc);
+          if (message.cc != null)
+            mimeMessage.setRecipients(MimeMessage.RecipientType.CC, message.cc);
 
-            if (message.bcc != null)
-              mimeMessage.setRecipients(MimeMessage.RecipientType.BCC, message.bcc);
+          if (message.bcc != null)
+            mimeMessage.setRecipients(MimeMessage.RecipientType.BCC, message.bcc);
 
-            // Setting the Subject and Content Type
-            mimeMessage.setSubject(message.subject);
-            mimeMessage.setContent(message.content.getContent(), message.content.getType());
+          // Setting the Subject and Content Type
+          mimeMessage.setSubject(message.subject);
+          mimeMessage.setContent(message.content.getContent(), message.content.getType());
 
-            mimeMessage.saveChanges();
-            transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
-            message.success();
-          }
-          catch (final MessagingException e) {
-            message.failure(e);
-            throw e;
-          }
+          mimeMessage.saveChanges();
+          transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+          message.success();
+          return mimeMessage.getMessageID();
+        }
+        catch (final MessagingException e) {
+          message.failure(e);
+          throw e;
         }
       }
       finally {
