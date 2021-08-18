@@ -24,7 +24,7 @@ import org.libj.lang.Assertions;
  * The {@link MimeContent} represents message content with an associated mime
  * type.
  */
-public class MimeContent implements Cloneable, Serializable {
+public class MimeContent implements Serializable {
   private static final long serialVersionUID = -51968810703836463L;
   private final String content;
   private final String type;
@@ -62,13 +62,15 @@ public class MimeContent implements Cloneable, Serializable {
   }
 
   @Override
-  public MimeContent clone() {
-    try {
-      return (MimeContent)super.clone();
-    }
-    catch (final CloneNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
+  public boolean equals(final Object obj) {
+    if (obj == this)
+      return true;
+
+    if (!(obj instanceof MimeContent))
+      return false;
+
+    final MimeContent that = (MimeContent)obj;
+    return content.equals(that.content) && type.equals(that.type);
   }
 
   @Override
@@ -80,14 +82,7 @@ public class MimeContent implements Cloneable, Serializable {
   }
 
   @Override
-  public boolean equals(final Object obj) {
-    if (obj == this)
-      return true;
-
-    if (!(obj instanceof MimeContent))
-      return false;
-
-    final MimeContent that = (MimeContent)obj;
-    return content.equals(that.content) && type.equals(that.type);
+  public String toString() {
+    return "Content-Type: " + type + "\n" + content;
   }
 }
