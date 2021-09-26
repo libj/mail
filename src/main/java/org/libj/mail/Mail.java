@@ -16,6 +16,8 @@
 
 package org.libj.mail;
 
+import static org.libj.lang.Assertions.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -44,7 +46,6 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.libj.lang.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,9 +114,9 @@ public final class Mail {
      *           {@code bcc} are null.
      */
     public Message(final String subject, final MimeContent content, final InternetAddress from, final InternetAddress[] to, final InternetAddress[] cc, final InternetAddress[] bcc) {
-      this.subject = Assertions.assertNotNull(subject, "subject == null");
-      this.content = Assertions.assertNotNull(content, "content == null");
-      this.from = Assertions.assertNotNull(from, "from == null");
+      this.subject = assertNotNull(subject, "subject == null");
+      this.content = assertNotNull(content, "content == null");
+      this.from = assertNotNull(from, "from == null");
       this.to = to;
       this.cc = cc;
       this.bcc = bcc;
@@ -194,7 +195,7 @@ public final class Mail {
        *           {@code port} is outside the range of [1, 65535].
        */
       public Builder(final String host, final int port) {
-        this.host = Assertions.assertNotNull(host, "host == null");
+        this.host = assertNotNull(host, "host == null");
         this.port = port;
         if (port < 1 || 65535 < port)
           throw new IllegalArgumentException("port [" + port + "] <> (1, 65535)");
@@ -488,7 +489,7 @@ public final class Mail {
      * @throws IllegalArgumentException If {@code message} is null.
      */
     public String send(final PasswordAuthentication authentication, final Message message) throws MessagingException {
-      Assertions.assertNotNull(message);
+      assertNotNull(message);
 
       final Properties properties = new Properties();
       properties.putAll(defaultProperties);
@@ -524,7 +525,7 @@ public final class Mail {
         else
           transport.connect(host, port, null, null);
 
-        Assertions.assertNotNull(message);
+        assertNotNull(message);
         if (logger.isDebugEnabled())
           logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
 

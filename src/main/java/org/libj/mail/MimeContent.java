@@ -16,9 +16,9 @@
 
 package org.libj.mail;
 
-import java.io.Serializable;
+import static org.libj.lang.Assertions.*;
 
-import org.libj.lang.Assertions;
+import java.io.Serializable;
 
 /**
  * The {@link MimeContent} represents message content with an associated mime
@@ -38,8 +38,8 @@ public class MimeContent implements Serializable {
    *           null.
    */
   public MimeContent(final String content, final String type) {
-    this.content = Assertions.assertNotNull(content);
-    this.type = Assertions.assertNotNull(type);
+    this.content = assertNotNull(content);
+    this.type = assertNotNull(type);
   }
 
   /**
