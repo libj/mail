@@ -25,7 +25,6 @@ import org.libj.lang.Assertions;
  * type.
  */
 public class MimeContent implements Serializable {
-  private static final long serialVersionUID = -51968810703836463L;
   private final String content;
   private final String type;
 
