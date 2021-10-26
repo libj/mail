@@ -518,8 +518,7 @@ public final class Mail {
         properties.list(System.err);
       }
 
-      final Transport transport = session.getTransport(protocol);
-      try {
+      try (final Transport transport = session.getTransport(protocol)) {
         if (authentication != null)
           transport.connect(host, port, authentication.getUserName(), authentication.getPassword());
         else
@@ -557,9 +556,6 @@ public final class Mail {
           message.failure(e);
           throw e;
         }
-      }
-      finally {
-        transport.close();
       }
     }
 
