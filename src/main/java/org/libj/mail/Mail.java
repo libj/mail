@@ -50,9 +50,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link Mail} class is used to send email via a SMTP(S) server. This
- * implementation supports a wide configuration requirement set as could be
- * expected by SMPT(S) servers.
+ * The {@link Mail} class is used to send email via a SMTP(S) server. This implementation supports a wide configuration requirement
+ * set as could be expected by SMPT(S) servers.
  */
 public final class Mail {
   private static final Logger logger = LoggerFactory.getLogger(Mail.class);
@@ -92,8 +91,7 @@ public final class Mail {
      * @param cc A string array of "cc" email addresses.
      * @param bcc A string array of "bcc" email addresses.
      * @throws AddressException If the parse of an email address failed.
-     * @throws IllegalArgumentException If {@code subject}, {@code content},
-     *           {@code from}, or each of {@code to}, {@code cc}, and
+     * @throws IllegalArgumentException If {@code subject}, {@code content}, {@code from}, or each of {@code to}, {@code cc}, and
      *           {@code bcc} are null.
      */
     public Message(final String subject, final MimeContent content, final InternetAddress from, final String[] to, final String[] cc, final String[] bcc) throws AddressException {
@@ -109,14 +107,13 @@ public final class Mail {
      * @param to A {@link InternetAddress} array of "to" addresses.
      * @param cc A {@link InternetAddress} array of "cc" addresses.
      * @param bcc A {@link InternetAddress} array of "bcc" addresses.
-     * @throws IllegalArgumentException If {@code subject}, {@code content},
-     *           {@code from}, or each of {@code to}, {@code cc}, and
+     * @throws IllegalArgumentException If {@code subject}, {@code content}, {@code from}, or each of {@code to}, {@code cc}, and
      *           {@code bcc} are null.
      */
     public Message(final String subject, final MimeContent content, final InternetAddress from, final InternetAddress[] to, final InternetAddress[] cc, final InternetAddress[] bcc) {
-      this.subject = assertNotNull(subject, "subject == null");
-      this.content = assertNotNull(content, "content == null");
-      this.from = assertNotNull(from, "from == null");
+      this.subject = assertNotNull(subject, "subject is null");
+      this.content = assertNotNull(content, "content is null");
+      this.from = assertNotNull(from, "from is null");
       this.to = to;
       this.cc = cc;
       this.bcc = bcc;
@@ -171,6 +168,8 @@ public final class Mail {
    * Class representing the SMTP(S) sender.
    */
   public static class Dispatch {
+    private static final String[] ptr = {"PTR"};
+
     public static class Builder {
       private final String host;
       private final int port;
@@ -186,16 +185,14 @@ public final class Mail {
       private boolean debug;
 
       /**
-       * Create a new {@link Builder} with the specified {@code host} and
-       * {@code port}.
+       * Create a new {@link Builder} with the specified {@code host} and {@code port}.
        *
        * @param host The SMTP server to connect to.
        * @param port The SMTP server port to connect to.
-       * @throws IllegalArgumentException If {@code host} is null, or if
-       *           {@code port} is outside the range of [1, 65535].
+       * @throws IllegalArgumentException If {@code host} is null, or if {@code port} is outside the range of [1, 65535].
        */
       public Builder(final String host, final int port) {
-        this.host = assertNotNull(host, "host == null");
+        this.host = assertNotNull(host, "host is null");
         this.port = port;
         if (port < 1 || 65535 < port)
           throw new IllegalArgumentException("port [" + port + "] <> (1, 65535)");
@@ -224,8 +221,8 @@ public final class Mail {
       }
 
       /**
-       * Set the socket connection timeout value in milliseconds. This timeout
-       * is implemented by {@link java.net.Socket}. Default is infinite timeout.
+       * Set the socket connection timeout value in milliseconds. This timeout is implemented by {@link java.net.Socket}. Default is
+       * infinite timeout.
        *
        * @param timeout The socket connection timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
@@ -236,8 +233,8 @@ public final class Mail {
       }
 
       /**
-       * Set the socket read timeout value in milliseconds. This timeout is
-       * implemented by {@link java.net.Socket}. Default is infinite timeout.
+       * Set the socket read timeout value in milliseconds. This timeout is implemented by {@link java.net.Socket}. Default is
+       * infinite timeout.
        *
        * @param timeout The socket read timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
@@ -248,12 +245,9 @@ public final class Mail {
       }
 
       /**
-       * Set the socket write timeout value in milliseconds. This timeout is
-       * implemented by using a
-       * {@link java.util.concurrent.ScheduledExecutorService} per connection
-       * that schedules a thread to close the socket if the timeout expires.
-       * Thus, the overhead of using this timeout is one thread per connection.
-       * Default is infinite timeout.
+       * Set the socket write timeout value in milliseconds. This timeout is implemented by using a
+       * {@link java.util.concurrent.ScheduledExecutorService} per connection that schedules a thread to close the socket if the
+       * timeout expires. Thus, the overhead of using this timeout is one thread per connection. Default is infinite timeout.
        *
        * @param timeout The socket write timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
@@ -266,8 +260,7 @@ public final class Mail {
       /**
        * Whether debugging is to be outputted from {@link Session}.
        *
-       * @param enabled Whether debugging is to be outputted from
-       *          {@link Session}.
+       * @param enabled Whether debugging is to be outputted from {@link Session}.
        * @return {@code this} {@link Builder}.
        */
       public Builder withDebug(final boolean enabled) {
@@ -278,11 +271,9 @@ public final class Mail {
       /**
        * Provide properties to be directly applied to the {@link Session}.
        *
-       * @param properties The properties to be directly applied to the
-       *          {@link Session}.
+       * @param properties The properties to be directly applied to the {@link Session}.
        * @return {@code this} {@link Builder}.
-       * @see <a href=
-       *      "https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html#properties">Session
+       * @see <a href= "https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html#properties">Session
        *      Properties</a>
        */
       public Builder withProperties(final Map<String,String> properties) {
@@ -291,11 +282,9 @@ public final class Mail {
       }
 
       /**
-       * Returns a new {@link Dispatch} with the options specified in this
-       * {@link Builder}.
+       * Returns a new {@link Dispatch} with the options specified in this {@link Builder}.
        *
-       * @return A new {@link Dispatch} with the options specified in this
-       *         {@link Builder}.
+       * @return A new {@link Dispatch} with the options specified in this {@link Builder}.
        */
       public Dispatch build() {
         return new Dispatch(host, port, ssl, tls, connectionTimeout, readTimeout, writeTimeout, properties, debug);
@@ -315,11 +304,9 @@ public final class Mail {
     }
 
     /**
-     * Do a reverse DNS lookup to find the host name associated with an IP
-     * address. Gets results more often than
-     * {@link java.net.InetAddress#getCanonicalHostName()}, but also tries the
-     * Inet implementation if reverse DNS does not work. Based on code found at
-     * http://www.codingforums.com/showpost.php?p=892349&postcount=5
+     * Do a reverse DNS lookup to find the host name associated with an IP address. Gets results more often than
+     * {@link java.net.InetAddress#getCanonicalHostName()}, but also tries the Inet implementation if reverse DNS does not work.
+     * Based on code found at http://www.codingforums.com/showpost.php?p=892349&postcount=5
      *
      * @return The host name, if one could be found, or the IP address
      */
@@ -348,7 +335,7 @@ public final class Mail {
           environment.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
           context = new InitialDirContext(environment);
           final String reverseDnsDomain = parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0] + ".in-addr.arpa";
-          final Attributes attrs = context.getAttributes(reverseDnsDomain, new String[] {"PTR"});
+          final Attributes attrs = context.getAttributes(reverseDnsDomain, ptr);
           for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) {
             final Attribute attr = enumeration.next();
             final String attrId = attr.getID();
@@ -448,8 +435,7 @@ public final class Mail {
     /**
      * Send a message with the provided parameters.
      *
-     * @param authentication The {@link PasswordAuthentication} for the transport
-     *          server.
+     * @param authentication The {@link PasswordAuthentication} for the transport server.
      * @param subject The subject of the message.
      * @param content The {@link MimeContent} content.
      * @param from The "from" {@link InternetAddress}.
@@ -463,8 +449,7 @@ public final class Mail {
     /**
      * Send a message with the provided parameters.
      *
-     * @param authentication The {@link PasswordAuthentication} for the transport
-     *          server.
+     * @param authentication The {@link PasswordAuthentication} for the transport server.
      * @param subject The subject of the message.
      * @param content The {@link MimeContent} content.
      * @param from The "from" {@link InternetAddress}.
@@ -480,11 +465,9 @@ public final class Mail {
     /**
      * Send {@code messages} with the provided {@link PasswordAuthentication}.
      *
-     * @param authentication The {@link PasswordAuthentication} for the
-     *          transport server.
+     * @param authentication The {@link PasswordAuthentication} for the transport server.
      * @param message The {@linkplain Message message} to send.
-     * @return The {@link MimeMessage#getMessageID() messageID} of the sent
-     *         message.
+     * @return The {@link MimeMessage#getMessageID() messageID} of the sent message.
      * @throws MessagingException If a transport error has occurred.
      * @throws IllegalArgumentException If {@code message} is null.
      */
