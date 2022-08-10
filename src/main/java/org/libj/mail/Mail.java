@@ -68,7 +68,7 @@ public final class Mail {
         return null;
 
       final InternetAddress[] addresses = new InternetAddress[emailAddrs.length];
-      for (int i = 0; i < emailAddrs.length; ++i)
+      for (int i = 0; i < emailAddrs.length; ++i) // [A]
         addresses[i] = new InternetAddress(emailAddrs[i]);
 
       return addresses;
@@ -317,7 +317,7 @@ public final class Mail {
         if (parts.length != 4)
           throw new IllegalArgumentException(ip + " does not match IPv4 format");
 
-        for (final String part : parts) {
+        for (final String part : parts) { // [A]
           try {
             final int x = Integer.parseInt(part);
             if (x < 0 || 255 < x)
@@ -336,10 +336,10 @@ public final class Mail {
           context = new InitialDirContext(environment);
           final String reverseDnsDomain = parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0] + ".in-addr.arpa";
           final Attributes attrs = context.getAttributes(reverseDnsDomain, ptr);
-          for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) {
+          for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) { // [X]
             final Attribute attr = enumeration.next();
             final String attrId = attr.getID();
-            for (final Enumeration<?> values = attr.getAll(); values.hasMoreElements();) {
+            for (final Enumeration<?> values = attr.getAll(); values.hasMoreElements();) { // [X]
               hostName = values.nextElement().toString();
               if ("PTR".equals(attrId)) {
                 final int len = hostName.length();

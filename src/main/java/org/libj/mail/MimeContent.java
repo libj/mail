@@ -21,21 +21,18 @@ import static org.libj.lang.Assertions.*;
 import java.io.Serializable;
 
 /**
- * The {@link MimeContent} represents message content with an associated mime
- * type.
+ * The {@link MimeContent} represents message content with an associated mime type.
  */
 public class MimeContent implements Serializable {
   private final String content;
   private final String type;
 
   /**
-   * Creates a new {@link MimeContent} with the provided {@code content} and
-   * mime {@code type}.
+   * Creates a new {@link MimeContent} with the provided {@code content} and mime {@code type}.
    *
    * @param content The content string.
    * @param type The mime type string.
-   * @throws IllegalArgumentException If {@code content} or {@code type} is
-   *           null.
+   * @throws IllegalArgumentException If {@code content} or {@code type} is null.
    */
   public MimeContent(final String content, final String type) {
     this.content = assertNotNull(content);
