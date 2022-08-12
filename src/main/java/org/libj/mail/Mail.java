@@ -68,7 +68,7 @@ public final class Mail {
         return null;
 
       final InternetAddress[] addresses = new InternetAddress[emailAddrs.length];
-      for (int i = 0; i < emailAddrs.length; ++i) // [A]
+      for (int i = 0, i$ = emailAddrs.length; i < i$; ++i) // [A]
         addresses[i] = new InternetAddress(emailAddrs[i]);
 
       return addresses;
