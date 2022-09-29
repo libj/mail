@@ -336,10 +336,10 @@ public final class Mail {
           context = new InitialDirContext(environment);
           final String reverseDnsDomain = parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0] + ".in-addr.arpa";
           final Attributes attrs = context.getAttributes(reverseDnsDomain, ptr);
-          for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) { // [X]
+          for (final NamingEnumeration<? extends Attribute> enumeration = attrs.getAll(); enumeration.hasMoreElements();) { // [E]
             final Attribute attr = enumeration.next();
             final String attrId = attr.getID();
-            for (final Enumeration<?> values = attr.getAll(); values.hasMoreElements();) { // [X]
+            for (final Enumeration<?> values = attr.getAll(); values.hasMoreElements();) { // [E]
               hostName = values.nextElement().toString();
               if ("PTR".equals(attrId)) {
                 final int len = hostName.length();
