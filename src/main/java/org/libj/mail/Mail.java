@@ -465,15 +465,13 @@ public final class Mail {
     /**
      * Send {@code messages} with the provided {@link PasswordAuthentication}.
      *
-     * @param authentication The {@link PasswordAuthentication} for the transport server.
+     * @param authentication The {@link PasswordAuthentication} for the transport server (can be null).
      * @param message The {@linkplain Message message} to send.
      * @return The {@link MimeMessage#getMessageID() messageID} of the sent message.
      * @throws MessagingException If a transport error has occurred.
-     * @throws IllegalArgumentException If {@code message} is null.
+     * @throws NullPointerException If {@code message} is null.
      */
     public String send(final PasswordAuthentication authentication, final Message message) throws MessagingException {
-      assertNotNull(message);
-
       final Properties properties = new Properties();
       properties.putAll(defaultProperties);
 
@@ -507,7 +505,6 @@ public final class Mail {
         else
           transport.connect(host, port, null, null);
 
-        assertNotNull(message);
         if (logger.isDebugEnabled()) logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
 
         session.getProperties().setProperty("mail." + protocol + ".from", message.from.getAddress());
