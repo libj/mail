@@ -16,9 +16,8 @@
 
 package org.libj.mail;
 
-import static org.libj.lang.Assertions.*;
-
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * The {@link MimeContent} represents message content with an associated mime type.
@@ -32,11 +31,11 @@ public class MimeContent implements Serializable {
    *
    * @param content The content string.
    * @param type The mime type string.
-   * @throws IllegalArgumentException If {@code content} or {@code type} is null.
+   * @throws NullPointerException If {@code content} or {@code type} is null.
    */
   public MimeContent(final String content, final String type) {
-    this.content = assertNotNull(content);
-    this.type = assertNotNull(type);
+    this.content = Objects.requireNonNull(content);
+    this.type = Objects.requireNonNull(type);
   }
 
   /**

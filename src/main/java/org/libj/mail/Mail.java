@@ -16,8 +16,6 @@
 
 package org.libj.mail;
 
-import static org.libj.lang.Assertions.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,6 +26,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
@@ -107,13 +106,13 @@ public final class Mail {
      * @param to A {@link InternetAddress} array of "to" addresses.
      * @param cc A {@link InternetAddress} array of "cc" addresses.
      * @param bcc A {@link InternetAddress} array of "bcc" addresses.
-     * @throws IllegalArgumentException If {@code subject}, {@code content}, {@code from}, or each of {@code to}, {@code cc}, and
-     *           {@code bcc} are null.
+     * @throws NullPointerException If {@code subject}, {@code content}, or {@code from} is null.
+     * @throws IllegalArgumentException If each of {@code to}, {@code cc}, and {@code bcc} are null.
      */
     public Message(final String subject, final MimeContent content, final InternetAddress from, final InternetAddress[] to, final InternetAddress[] cc, final InternetAddress[] bcc) {
-      this.subject = assertNotNull(subject, "subject is null");
-      this.content = assertNotNull(content, "content is null");
-      this.from = assertNotNull(from, "from is null");
+      this.subject = Objects.requireNonNull(subject, "subject is null");
+      this.content = Objects.requireNonNull(content, "content is null");
+      this.from = Objects.requireNonNull(from, "from is null");
       this.to = to;
       this.cc = cc;
       this.bcc = bcc;
@@ -189,10 +188,11 @@ public final class Mail {
        *
        * @param host The SMTP server to connect to.
        * @param port The SMTP server port to connect to.
-       * @throws IllegalArgumentException If {@code host} is null, or if {@code port} is outside the range of [1, 65535].
+       * @throws NullPointerException If {@code host} is null.
+       * @throws IllegalArgumentException If {@code port} is outside the range of [1, 65535].
        */
       public Builder(final String host, final int port) {
-        this.host = assertNotNull(host, "host is null");
+        this.host = Objects.requireNonNull(host, "host is null");
         this.port = port;
         if (port < 1 || 65535 < port)
           throw new IllegalArgumentException("port [" + port + "] <> (1, 65535)");
