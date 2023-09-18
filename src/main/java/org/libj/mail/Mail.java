@@ -81,7 +81,7 @@ public final class Mail {
     public final InternetAddress[] bcc;
 
     /**
-     * Create a new {@link Message} with the supplied parameters.
+     * Creates a new {@link Message} with the supplied parameters.
      *
      * @param subject The subject of the message.
      * @param content The {@link MimeContent} content.
@@ -98,7 +98,7 @@ public final class Mail {
     }
 
     /**
-     * Create a new {@link Message} with the supplied parameters.
+     * Creates a new {@link Message} with the supplied parameters.
      *
      * @param subject The subject of the message.
      * @param content The {@link MimeContent} content.
@@ -184,7 +184,7 @@ public final class Mail {
       private boolean debug;
 
       /**
-       * Create a new {@link Builder} with the specified {@code host} and {@code port}.
+       * Creates a new {@link Builder} with the specified {@code host} and {@code port}.
        *
        * @param host The SMTP server to connect to.
        * @param port The SMTP server port to connect to.
