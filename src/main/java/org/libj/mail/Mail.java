@@ -233,8 +233,8 @@ public final class Mail {
       }
 
       /**
-       * Set the socket read timeout value in milliseconds. This timeout is implemented by {@link java.net.Socket}. Default is
-       * infinite timeout.
+       * Set the socket read timeout value in milliseconds. This timeout is implemented by {@link java.net.Socket}. Default is infinite
+       * timeout.
        *
        * @param timeout The socket read timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
@@ -246,8 +246,8 @@ public final class Mail {
 
       /**
        * Set the socket write timeout value in milliseconds. This timeout is implemented by using a
-       * {@link java.util.concurrent.ScheduledExecutorService} per connection that schedules a thread to close the socket if the
-       * timeout expires. Thus, the overhead of using this timeout is one thread per connection. Default is infinite timeout.
+       * {@link java.util.concurrent.ScheduledExecutorService} per connection that schedules a thread to close the socket if the timeout
+       * expires. Thus, the overhead of using this timeout is one thread per connection. Default is infinite timeout.
        *
        * @param timeout The socket write timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
@@ -305,8 +305,8 @@ public final class Mail {
 
     /**
      * Do a reverse DNS lookup to find the host name associated with an IP address. Gets results more often than
-     * {@link java.net.InetAddress#getCanonicalHostName()}, but also tries the Inet implementation if reverse DNS does not work.
-     * Based on code found at http://www.codingforums.com/showpost.php?p=892349&postcount=5
+     * {@link InetAddress#getCanonicalHostName()}, but also tries the Inet implementation if reverse DNS does not work. Based on code
+     * found at http://www.codingforums.com/showpost.php?p=892349&postcount=5
      *
      * @return The host name, if one could be found, or the IP address
      */
@@ -505,7 +505,7 @@ public final class Mail {
         else
           transport.connect(host, port, null, null);
 
-        if (logger.isDebugEnabled()) logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : ""));
+        if (logger.isDebugEnabled()) { logger.debug("Sending Email:\n  subject: " + message.subject + "\n       to: " + Arrays.toString(message.to) + (message.cc != null ? "\n       cc: " + Arrays.toString(message.cc) : "") + (message.bcc != null ? "\n      bcc: " + Arrays.toString(message.bcc) : "")); }
 
         session.getProperties().setProperty("mail." + protocol + ".from", message.from.getAddress());
         final MimeMessage mimeMessage = new MimeMessage(session);
