@@ -176,9 +176,9 @@ public final class Mail {
       private boolean ssl;
       private boolean tls;
 
-      private int connectionTimeout = -1;
-      private int readTimeout = -1;
-      private int writeTimeout = -1;
+      private int connectionTimeoutMs = -1;
+      private int readTimeoutMs = -1;
+      private int writeTimeoutMs = -1;
 
       private Map<String,String> properties;
       private boolean debug;
@@ -224,11 +224,11 @@ public final class Mail {
        * Set the socket connection timeout value in milliseconds. This timeout is implemented by {@link java.net.Socket}. Default is
        * infinite timeout.
        *
-       * @param timeout The socket connection timeout value in milliseconds.
+       * @param timeoutMs The socket connection timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
        */
-      public Builder withConnectionTimeout(final int timeout) {
-        this.connectionTimeout = timeout;
+      public Builder withConnectionTimeout(final int timeoutMs) {
+        this.connectionTimeoutMs = timeoutMs;
         return this;
       }
 
@@ -236,11 +236,11 @@ public final class Mail {
        * Set the socket read timeout value in milliseconds. This timeout is implemented by {@link java.net.Socket}. Default is infinite
        * timeout.
        *
-       * @param timeout The socket read timeout value in milliseconds.
+       * @param timeoutMs The socket read timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
        */
-      public Builder withReadTimeout(final int timeout) {
-        this.readTimeout = timeout;
+      public Builder withReadTimeout(final int timeoutMs) {
+        this.readTimeoutMs = timeoutMs;
         return this;
       }
 
@@ -249,11 +249,11 @@ public final class Mail {
        * {@link java.util.concurrent.ScheduledExecutorService} per connection that schedules a thread to close the socket if the timeout
        * expires. Thus, the overhead of using this timeout is one thread per connection. Default is infinite timeout.
        *
-       * @param timeout The socket write timeout value in milliseconds.
+       * @param timeoutMs The socket write timeout value in milliseconds.
        * @return {@code this} {@link Builder}.
        */
-      public Builder withWriteTimeout(final int timeout) {
-        this.writeTimeout = timeout;
+      public Builder withWriteTimeout(final int timeoutMs) {
+        this.writeTimeoutMs = timeoutMs;
         return this;
       }
 
@@ -287,7 +287,7 @@ public final class Mail {
        * @return A new {@link Dispatch} with the options specified in this {@link Builder}.
        */
       public Dispatch build() {
-        return new Dispatch(host, port, ssl, tls, connectionTimeout, readTimeout, writeTimeout, properties, debug);
+        return new Dispatch(host, port, ssl, tls, connectionTimeoutMs, readTimeoutMs, writeTimeoutMs, properties, debug);
       }
     }
 
@@ -377,7 +377,7 @@ public final class Mail {
     private final String protocol;
     private final boolean debug;
 
-    private Dispatch(final String host, final int port, final boolean ssl, final boolean tls, final int connectionTimeout, final int readTimeout, final int writeTimeout, final Map<String,String> properties, final boolean debug) {
+    private Dispatch(final String host, final int port, final boolean ssl, final boolean tls, final int connectionTimeoutMs, final int readTimeoutMs, final int writeTimeoutMs, final Map<String,String> properties, final boolean debug) {
       this.host = host;
       this.port = port;
       if (properties != null)
@@ -417,14 +417,14 @@ public final class Mail {
       defaultProperties.put("mail." + protocol + ".quitwait", "false");
       defaultProperties.put("mail." + protocol + ".ssl.trust", "*");
 
-      if (connectionTimeout != -1)
-        defaultProperties.put("mail." + protocol + ".connectiontimeout", String.valueOf(connectionTimeout));
+      if (connectionTimeoutMs != -1)
+        defaultProperties.put("mail." + protocol + ".connectiontimeout", String.valueOf(connectionTimeoutMs));
 
-      if (readTimeout != -1)
-        defaultProperties.put("mail." + protocol + ".timeout", String.valueOf(readTimeout));
+      if (readTimeoutMs != -1)
+        defaultProperties.put("mail." + protocol + ".timeout", String.valueOf(readTimeoutMs));
 
-      if (writeTimeout != -1)
-        defaultProperties.put("mail." + protocol + ".writetimeout", String.valueOf(writeTimeout));
+      if (writeTimeoutMs != -1)
+        defaultProperties.put("mail." + protocol + ".writetimeout", String.valueOf(writeTimeoutMs));
 
       if (this.debug = debug) {
         defaultProperties.put("mail.debug", "true");
